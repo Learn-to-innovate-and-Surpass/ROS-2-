@@ -1,0 +1,54 @@
+这个错误通常表示下载的 .deb 文件不完整或已损坏。让我们来解决这个问题：
+1. 删除损坏的文件
+sudo rm /tmp/ros2-apt-source.deb
+2. 重新下载 ROS 2 源文件
+方法 A：使用 wget（推荐）
+# 首先安装 curl 或 wget（如果还没安装）
+sudo apt update
+sudo apt install curl wget -y
+
+# 重新下载（以 humble 为例）
+wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc -O /tmp/ros.asc
+sudo apt-key add /tmp/ros.asc
+
+# 添加源
+sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2.list'
+
+方法 B：完整步骤重新安装
+# 1. 清理旧文件
+sudo rm -f /tmp/ros2-apt-source.deb
+
+# 2. 设置语言环境
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+# 3. 添加 ROS 2 GPG 密钥
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+
+sudo apt update && sudo apt install curl -y
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+# 4. 添加仓库
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+3. 更新并安装 ROS 2
+sudo apt update
+sudo apt upgrade
+
+# 安装完整版 ROS 2（以 humble 为例）
+sudo apt install ros-humble-desktop
+
+# 或安装基础版
+# sudo apt install ros-humble-ros-base
+4. 设置环境变量
+# 添加到 ~/.bashrc
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+5. 验证安装
+# 测试 ROS 2 命令行工具
+ros2 --help
+
+# 运行一个示例
+ros2 run demo_nodes_cpp talker
